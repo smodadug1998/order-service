@@ -7,11 +7,11 @@ import com.ecommerce.order.request.CartItemRequest;
 import java.util.List;
 
 public interface CartService {
-    boolean addToCart(Long userId, CartItemRequest cartItemRequest);
+    boolean addToCart(String userId, CartItemRequest cartItemRequest);
 
-    boolean deleteItemFromCart(Long userId, Long productId);
+    boolean deleteItemFromCart(String userId, Long productId);
 
-    List<CartItem> getCart(Long userId);
+    List<CartItem> getCart(String userId);
 
-    void clearCart(Long userId);
+    void clearCart(String userId);
 }

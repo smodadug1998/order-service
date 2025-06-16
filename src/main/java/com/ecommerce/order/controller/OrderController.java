@@ -17,7 +17,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@RequestHeader("X-User-ID") long userId) {
+    public ResponseEntity<OrderResponse> createOrder(@RequestHeader("X-User-ID") String userId) {
         return orderService.createOrder(userId)
                 .map(orderResponse -> new ResponseEntity<>(orderResponse, HttpStatus.CREATED))
                 .orElseGet(() -> ResponseEntity.badRequest().build());

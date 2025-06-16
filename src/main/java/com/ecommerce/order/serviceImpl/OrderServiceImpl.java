@@ -25,7 +25,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepo orderRepo;
 
     @Override
-    public Optional<OrderResponse> createOrder(Long userId) {
+    public Optional<OrderResponse> createOrder(String userId) {
         List<CartItem> cartItems = cartService.getCart(userId);
         if (cartItems == null || cartItems.isEmpty()) {
             return Optional.empty();

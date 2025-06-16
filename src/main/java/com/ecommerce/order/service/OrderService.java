@@ -6,5 +6,5 @@ import com.ecommerce.order.response.OrderResponse;
 import java.util.Optional;
 
 public interface OrderService {
-    Optional<OrderResponse> createOrder(Long userId);
+    Optional<OrderResponse> createOrder(String userId);
 }
