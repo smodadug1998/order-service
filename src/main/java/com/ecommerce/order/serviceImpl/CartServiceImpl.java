@@ -8,6 +8,7 @@ import com.ecommerce.order.request.CartItemRequest;
 import com.ecommerce.order.response.ProductResponse;
 import com.ecommerce.order.response.UserResponse;
 import com.ecommerce.order.service.CartService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class CartServiceImpl implements CartService {
     private final ProductServiceClient productServiceClient;
     private final UserServiceClient userServiceClient;
 
+    @CircuitBreaker(name = "product-service" , fallbackMethod = "AddToCartFallback")
     @Override
     public boolean addToCart(String userId, CartItemRequest cartItemRequest) {
         ProductResponse productResponse = productServiceClient.getProductById(cartItemRequest.getProductId());
@@ -36,19 +38,23 @@ public class CartServiceImpl implements CartService {
         CartItem existingCartItem = cartItemRepo.findByUserIdAndProductId(userId, cartItemRequest.getProductId());
         if (existingCartItem != null) {
             existingCartItem.setQuantity(existingCartItem.getQuantity() + cartItemRequest.getQuantity());
-            existingCartItem.setPrice(BigDecimal.valueOf(10000.00));
+            existingCartItem.setPrice(productResponse.getPrice().multiply(new BigDecimal(cartItemRequest.getQuantity())));
             cartItemRepo.save(existingCartItem);
         } else {
             CartItem cartItem = new CartItem();
             cartItem.setUserId(userId);
             cartItem.setProductId(cartItemRequest.getProductId());
             cartItem.setQuantity(cartItemRequest.getQuantity());
-            cartItem.setPrice(BigDecimal.valueOf(10000.00));
+            cartItem.setPrice(productResponse.getPrice().multiply(new BigDecimal(cartItemRequest.getQuantity())));
             cartItemRepo.save(cartItem);
         }
         return true;
     }
 
+    public boolean AddToCartFallback(String userId, CartItemRequest cartItemRequest, Exception exception){
+        System.out.println("FALLBACK CALLED");
+        return false;
+    }
     @Override
     public boolean deleteItemFromCart(String userId, Long productId) {
         CartItem cartItem =  cartItemRepo.findByUserIdAndProductId(userId,productId);
