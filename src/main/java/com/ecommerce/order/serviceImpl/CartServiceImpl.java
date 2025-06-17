@@ -9,13 +9,13 @@ import com.ecommerce.order.response.ProductResponse;
 import com.ecommerce.order.response.UserResponse;
 import com.ecommerce.order.service.CartService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +25,13 @@ public class CartServiceImpl implements CartService {
     private final CartItemRepo cartItemRepo;
     private final ProductServiceClient productServiceClient;
     private final UserServiceClient userServiceClient;
+    int attempt = 0;
 
-    @CircuitBreaker(name = "product-service" , fallbackMethod = "AddToCartFallback")
+    //@CircuitBreaker(name = "product-service" , fallbackMethod = "AddToCartFallback")
+    @Retry(name = "retryBreaker" , fallbackMethod = "AddToCartFallback")
     @Override
     public boolean addToCart(String userId, CartItemRequest cartItemRequest) {
+        System.out.println("Attempt count: " + ++attempt);
         ProductResponse productResponse = productServiceClient.getProductById(cartItemRequest.getProductId());
         if (productResponse == null || productResponse.getStockQuantity() < cartItemRequest.getQuantity()) return false;
 
@@ -52,7 +55,6 @@ public class CartServiceImpl implements CartService {
     }
 
     public boolean AddToCartFallback(String userId, CartItemRequest cartItemRequest, Exception exception){
-        System.out.println("FALLBACK CALLED");
         return false;
     }
     @Override
