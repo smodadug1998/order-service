@@ -1,7 +1,6 @@
 package com.ecommerce.order.dto;
 
 import com.ecommerce.order.enums.OrderStatus;
-import com.ecommerce.order.model.OrderItem;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

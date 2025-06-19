@@ -1,6 +1,5 @@
 package com.ecommerce.order.serviceImpl;
 
-
 import com.ecommerce.order.dto.OrderCreatedEventDTO;
 import com.ecommerce.order.dto.OrderItemDTO;
 import com.ecommerce.order.enums.OrderStatus;
@@ -13,11 +12,12 @@ import com.ecommerce.order.service.CartService;
 import com.ecommerce.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -26,8 +26,7 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
     private final CartService cartService;
     private final OrderRepo orderRepo;
-    private final RabbitTemplate rabbitTemplate;
-
+    private final StreamBridge streamBridge;
     @Override
     public Optional<OrderResponse> createOrder(String userId) {
         List<CartItem> cartItems = cartService.getCart(userId);
@@ -65,8 +64,7 @@ public class OrderServiceImpl implements OrderService {
                 savedOrder.getCreatedAt()
         );
 
-        rabbitTemplate.convertAndSend("order.exchange","order.tracking"
-                , eventDTO);
+        streamBridge.send("createOrder-out-0", eventDTO);
         return Optional.of(mapToOrderResponse(savedOrder));
     }
 

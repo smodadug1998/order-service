@@ -27,7 +27,6 @@ public class CartServiceImpl implements CartService {
     private final UserServiceClient userServiceClient;
     int attempt = 0;
 
-    //@CircuitBreaker(name = "product-service" , fallbackMethod = "AddToCartFallback")
     @Retry(name = "retryBreaker" , fallbackMethod = "AddToCartFallback")
     @Override
     public boolean addToCart(String userId, CartItemRequest cartItemRequest) {
